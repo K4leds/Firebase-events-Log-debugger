@@ -79,7 +79,7 @@
                     <a href="#features" class="hover:text-firebase transition-colors">Features</a>
                     <a href="#demo" class="hover:text-firebase transition-colors">Demo</a>
                     <a href="#docs" class="hover:text-firebase transition-colors">Documentation</a>
-                    <button id="waitlistBtn" class="bg-firebase hover:bg-firebase-dark px-6 py-2 rounded-lg font-medium transition-all transform hover:scale-105">
+                    <button onclick="showModal()" class="bg-firebase hover:bg-firebase-dark px-6 py-2 rounded-lg font-medium transition-all transform hover:scale-105">
                         Join Waitlist
                     </button>
                 </div>
@@ -113,7 +113,7 @@
                 </p>
                 
                 <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-                    <button id="heroWaitlistBtn" class="group bg-firebase hover:bg-firebase-dark px-8 py-4 rounded-xl font-semibold text-lg transition-all transform hover:scale-105 hover:shadow-2xl hover:shadow-firebase/25">
+                    <button onclick="showModal()" class="group bg-firebase hover:bg-firebase-dark px-8 py-4 rounded-xl font-semibold text-lg transition-all transform hover:scale-105 hover:shadow-2xl hover:shadow-firebase/25">
                         <span class="flex items-center space-x-2">
                             <span>Join the Waitlist</span>
                             <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
@@ -442,7 +442,7 @@
                 <div class="flex space-x-4 mt-6">
                     <button 
                         type="button" 
-                        id="closeModal"
+                        onclick="hideModal()"
                         class="flex-1 px-6 py-3 border border-gray-600 rounded-lg hover:bg-gray-700 transition-all"
                     >
                         Cancel
@@ -482,141 +482,44 @@
             });
         }
 
-        // Modal functionality
-        const waitlistBtns = document.querySelectorAll('#waitlistBtn, #heroWaitlistBtn');
-        const modal = document.getElementById('waitlistModal');
-        const closeModal = document.getElementById('closeModal');
-        const waitlistForm = document.getElementById('waitlistForm');
-        const heroWaitlistForm = document.getElementById('heroWaitlistForm');
-
-        waitlistBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                setTimeout(() => {
-                    modal.querySelector('.bg-gray-800').classList.remove('scale-95');
-                    modal.querySelector('.bg-gray-800').classList.add('scale-100');
-                }, 10);
-            });
-        });
-
-        closeModal.addEventListener('click', () => {
-            modal.querySelector('.bg-gray-800').classList.remove('scale-100');
-            modal.querySelector('.bg-gray-800').classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                // Reset modal content if it was changed
-                location.reload();
-            }, 300);
-        });
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal.click();
-            }
-        });
-
-        // Hero form submission
-        heroWaitlistForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(heroWaitlistForm);
-            const submitButton = heroWaitlistForm.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-            
-            // Show loading state
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Joining...';
-            submitButton.disabled = true;
-            
-            try {
-                const response = await fetch('https://formspree.io/f/movlwoed', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    // Show success message
-                    submitButton.innerHTML = '<i class="fas fa-check mr-2"></i>Added!';
-                    submitButton.classList.remove('bg-white', 'text-firebase');
-                    submitButton.classList.add('bg-green-500', 'text-white');
-                    heroWaitlistForm.reset();
-                } else {
-                    throw new Error('Form submission failed');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                submitButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Error';
-                submitButton.classList.remove('bg-white', 'text-firebase');
-                submitButton.classList.add('bg-red-500', 'text-white');
-            } finally {
-                // Reset button after 3 seconds
-                setTimeout(() => {
-                    submitButton.innerHTML = originalText;
-                    submitButton.disabled = false;
-                    submitButton.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
-                    submitButton.classList.add('bg-white', 'text-firebase');
-                }, 3000);
-            }
-        });
-
-        waitlistForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(waitlistForm);
-            const submitButton = waitlistForm.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-            
-            // Show loading state
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Joining...';
-            submitButton.disabled = true;
-            
-            try {
-                // Option 1: Using Formspree (replace YOUR_FORM_ID with actual ID)
-                const response = await fetch('https://formspree.io/f/movlwoed', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    // Success
-                    showSuccessMessage();
-                    waitlistForm.reset();
-                    setTimeout(() => closeModal.click(), 2000);
-                } else {
-                    throw new Error('Form submission failed');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showErrorMessage();
-            } finally {
-                // Reset button
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-            }
-        });
-        
-        function showSuccessMessage() {
-            const modalContent = document.querySelector('#waitlistModal .bg-gray-800');
-            modalContent.innerHTML = `
-                <div class="text-center py-8">
-                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-2 text-green-400">Welcome to the Waitlist!</h3>
-                    <p class="text-gray-300 mb-4">Thank you for joining! We'll notify you as soon as Firebase Analytics Debugger is ready.</p>
-                    <div class="text-sm text-gray-400">
-                        <p>Check your email for confirmation and updates.</p>
-                    </div>
-                </div>
-            `;
+        // Simple Modal functionality
+        function showModal() {
+            const modal = document.getElementById('waitlistModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
+        
+        function hideModal() {
+            const modal = document.getElementById('waitlistModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        
+        // Show modal buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const waitlistBtns = document.querySelectorAll('#waitlistBtn, #heroWaitlistBtn');
+            const modal = document.getElementById('waitlistModal');
+            const closeModal = document.getElementById('closeModal');
+            
+            waitlistBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showModal();
+                });
+            });
+            
+            if (closeModal) {
+                closeModal.addEventListener('click', hideModal);
+            }
+            
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        hideModal();
+                    }
+                });
+            }
+        });
         
         function showErrorMessage() {
             const modalContent = document.querySelector('#waitlistModal .bg-gray-800');
